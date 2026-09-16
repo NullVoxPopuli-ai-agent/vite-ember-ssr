@@ -1,6 +1,8 @@
 /**
- * SSR entry point. Mirrors app.ts, with autoboot disabled so the server
- * controls boot timing via app.visit().
+ * SSR entry point.
+ *
+ * Mirrors app.ts, with autoboot disabled
+ * so the server controls boot timing via app.visit().
  */
 import Application from '@ember/application';
 

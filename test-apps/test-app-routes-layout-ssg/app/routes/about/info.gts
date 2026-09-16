@@ -3,7 +3,8 @@ import Component from "@glimmer/component";
 import "./info.css";
 
 /**
- * A component that only the about route uses, with its own CSS.
+ * A component that only the about route uses.
+ *
  * Its CSS must end up in the about chunk and in the CSS manifest.
  */
 export default class Info extends Component {

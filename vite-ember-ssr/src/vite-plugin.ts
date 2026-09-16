@@ -22,38 +22,33 @@ export const SSR_BODY_MARKER = '<!-- VITE_EMBER_SSR_BODY -->';
 export const CSS_MANIFEST_FILENAME = 'css-manifest.json';
 
 /**
- * The CSS manifest maps dynamically imported source modules to the CSS
- * files that Vite extracted from their code-split chunks during the
- * client build.
+ * The CSS manifest maps each dynamically imported module
+ * to the CSS files Vite extracted for its chunk in the client build.
  *
- * Keys are module paths relative to the Vite root, as the client build
- * saw them:
+ * Keys are module paths relative to the Vite root:
  *
- * ```json
- * {
- *   "app/templates/about.gts": ["/assets/about-VWk4xp3e.css"]
- * }
- * ```
+ *   "app/templates/about.gts" → ["/assets/about-VWk4xp3e.css"]
  *
- * During SSR, every `import()` the app performs while rendering a URL
- * is recorded (see `trackDynamicImports`). The recorded modules are
- * looked up here, and their CSS is injected as `<link>` tags.
+ * During SSR, every `import()` the app performs while it renders a URL
+ * is recorded. See `trackDynamicImports`.
  *
- * The manifest carries no knowledge of Ember's file layout or route
- * naming. Whatever the app's `modules` and `_embroiderRouteBundles_`
- * load for a route is what gets styled.
+ * The recorded modules are looked up here,
+ * and their CSS is injected as `<link>` tags.
  */
 export type CssManifest = Record<string, string[]>;
 
 /**
- * Name of the global hook that SSR-transformed `import()` calls invoke
- * with the source module path before the import runs.
+ * Name of the global that SSR-transformed `import()` calls invoke
+ * with the module path, before the import runs.
  */
 export const IMPORT_HOOK_GLOBAL = '__vite_ember_ssr_import__';
 
 /**
- * Converts an absolute module id into the manifest key: a posix path
- * relative to the Vite root, without any query string.
+ * Converts an absolute module id into the manifest key.
+ *
+ * - relative to the Vite root
+ * - posix separators
+ * - no query string
  */
 function sourceModuleId(id: string, root: string): string {
   const clean = id.split('?')[0];
@@ -91,9 +86,10 @@ interface OutputChunkWithMeta {
  * shared chunks too, skipping the main entry chunk (whose CSS is
  * already in the HTML template).
  *
- * Keys are the source module paths of the dynamic entries, relative to
- * the Vite root. The SSR side records the same paths when the app calls
- * `import()`, so the two match without any layout convention.
+ * Keys are the source module paths of the dynamic entries,
+ * relative to the Vite root.
+ *
+ * The SSR side records the same paths when the app calls `import()`.
  */
 function buildCssManifest(
   bundle: Record<string, { type: string }>,
@@ -163,8 +159,7 @@ function buildCssManifest(
 
     if (css.size === 0) continue;
 
-    // A chunk without a facade module has no source path the SSR side
-    // could ever record, so it cannot be looked up.
+    // Without a facade module there is no source path to key on
     if (!chunk.facadeModuleId) continue;
 
     // Prefix CSS paths with the base URL so they work as href values.
@@ -194,8 +189,9 @@ function nodeSpan(node: AstNode): [number, number] | undefined {
 }
 
 /**
- * Returns the specifier of an `import()` expression when it is a plain
- * string, or undefined for computed specifiers.
+ * The specifier of an `import()` expression when it is a plain string.
+ *
+ * Computed specifiers give undefined.
  */
 function literalSpecifier(source: AstNode): string | undefined {
   if (source.type === 'Literal' && typeof source.value === 'string') {
@@ -226,22 +222,22 @@ function walk(node: unknown, visit: (node: AstNode) => void): void {
 }
 
 /**
- * Vite plugin that makes SSR renders observable: every `import()` in
- * the app's own modules is prefixed with a call to the
- * `__vite_ember_ssr_import__` global, passing the imported module's
- * path relative to the Vite root.
+ * Reports every `import()` the app's own modules perform in SSR.
  *
- * `(globalThis.__vite_ember_ssr_import__?.("app/templates/about.gts"), import("./about.gts"))`
+ * Each `import()` is prefixed with a call to the
+ * `__vite_ember_ssr_import__` global, passing the module's path
+ * relative to the Vite root:
  *
- * The renderer installs that global for the duration of a render and
- * collects the paths. Together with the CSS manifest (keyed by the same
- * paths) this yields the CSS a URL needs, without the plugin knowing
- * how the app lays out its files or names its routes.
+ *   import("./about.gts")
+ *   → (globalThis.__vite_ember_ssr_import__?.("app/templates/about.gts"), import("./about.gts"))
  *
- * Only SSR transforms are touched. Client output is unchanged.
+ * The renderer installs that global while it renders a URL
+ * and collects the paths. See css-links.ts.
  *
- * Runs as a `post` transform so that `import.meta.glob` and TypeScript
- * have already been compiled to plain `import()` expressions.
+ * Only SSR transforms are touched.
+ *
+ * Runs as a `post` transform, after `import.meta.glob` and TypeScript
+ * are compiled down to plain `import()` expressions.
  */
 export function trackDynamicImports(): Plugin {
   let root = '';
@@ -253,8 +249,8 @@ export function trackDynamicImports(): Plugin {
 
     configResolved(config) {
       root = config.root;
-      // emberSsr() and emberSsg() each register this plugin. Only the
-      // first copy transforms, so imports are wrapped once.
+      // emberSsr() and emberSsg() each register this plugin.
+      // Only the first copy transforms, so imports are wrapped once.
       const first = config.plugins.find((p) => p.name === plugin.name);
       active = first === plugin;
     },

@@ -8,8 +8,8 @@ const macros = buildMacros({
       config.enableRuntimeMode();
     }
 
-    // @embroider/router only enables lazy route bundles when it is told
-    // that it runs in an Embroider build.
+    // @embroider/router only enables lazy route bundles
+    // when it knows that it runs in an Embroider build
     config.setGlobalConfig(import.meta.filename, '@embroider/core', {
       active: true,
     });

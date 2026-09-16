@@ -232,8 +232,7 @@ export function createDevEmberApp(
           _renderMode: 'serialize',
         };
 
-        // Every import() the app performs while visiting the URL is
-        // recorded and matched against the CSS manifest afterwards.
+        // Every import() during the visit is matched against the CSS manifest
         const imports = startImportTracking();
 
         const instance = await app.visit(url, bootOptions);

@@ -1,14 +1,17 @@
 /**
  * Routes layout SSG tests.
  *
- * The app keeps each route's files together in `app/routes/<name>/`
- * (`+template.gts` next to the route's own components and CSS) and maps
- * them to resolver keys itself. Nothing lives in `app/templates/`, and
- * every lazy chunk is named `_template`.
+ * The app keeps each route's files together in `app/routes/<name>/`:
+ * - `+template.gts`
+ * - the route's own components
+ * - the route's own CSS
  *
- * The CSS manifest and the prerender step must still pair each route with
- * its CSS. They can only do that by keying on the modules the app imports,
- * never by deriving route names from file paths.
+ * It maps those files to resolver keys itself.
+ * Nothing lives in `app/templates/`.
+ * Every lazy chunk is named `_template`.
+ *
+ * The CSS manifest and the prerendered pages
+ * must still pair each route with its CSS.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { resolve } from 'node:path';

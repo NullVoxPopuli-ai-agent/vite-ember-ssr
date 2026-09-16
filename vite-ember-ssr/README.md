@@ -458,9 +458,9 @@ Application.create(config.APP);
 
 Both SSR and SSG support `@embroider/router`'s lazy loaded route bundles (`window._embroiderRouteBundles_`). No additional configuration is required.
 
-Lazy routes bring their CSS with them, and that CSS has to be linked in the server rendered `<head>` to avoid a flash of unstyled content. The client build writes a `css-manifest.json` that maps each dynamically imported module (a path relative to the Vite root, such as `app/templates/about.gts`) to the CSS files Vite extracted for its chunk. While the server renders a URL, every `import()` the app performs is recorded. The recorded modules are looked up in the manifest and their CSS is injected as `<link>` tags.
+The CSS of a lazy route is linked in the `<head>` of every server rendered page that loads it, so the page does not flash unstyled before the route's JS arrives. The client build writes the `css-manifest.json` this needs. Pass it to `renderRoute` on an SSR server, see [`loadCssManifest`](#vite-ember-ssrserver). SSG picks it up on its own.
 
-Because the manifest is keyed by what the app imports rather than by route name, any file layout works. Where a template lives, how `modules` is assembled, and how `_embroiderRouteBundles_` is built are all up to the app.
+This works with any file layout. Route files can live anywhere, and `modules` and `_embroiderRouteBundles_` can be assembled any way the app likes.
 
 ### SSR bundling (`ssr.noExternal`)
 
@@ -538,21 +538,21 @@ import {
 
 This repo contains the library and a set of test apps that exercise it.
 
-| Path                                       | Description                                                             |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| `vite-ember-ssr/`                          | Core library and test suites                                            |
-| `test-apps/test-app/`                      | Ember test app (SSR)                                                    |
-| `test-apps/test-app-ssg/`                  | Ember test app (SSG)                                                    |
-| `test-apps/test-app-combined/`             | Ember test app (SSR + SSG)                                              |
-| `test-apps/test-app-lazy-ssr/`             | Ember test app (SSR + lazy routes)                                      |
-| `test-apps/test-app-lazy-ssg/`             | Ember test app (SSG + lazy routes)                                      |
-| `test-apps/test-app-routes-layout-ssg/`    | Ember test app (SSG + lazy routes kept in `app/routes/<name>/` folders) |
-| `test-apps/test-app-monorepo-ssr/`         | Ember test app consuming a monorepo lib                                 |
-| `test-apps/test-app-monorepo-ssg/`         | Same, for SSG                                                           |
-| `test-apps/test-app-ssr-loading-substate/` | Loading substate behaviour (SSR)                                        |
-| `test-apps/test-app-ssg-loading-substate/` | Loading substate behaviour (SSG)                                        |
-| `test-apps/monorepo-lib/`                  | Shared library used by the monorepo apps                                |
-| `test-apps/test-server/`                   | Fastify SSR server                                                      |
+| Path                                       | Description                                                |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| `vite-ember-ssr/`                          | Core library and test suites                               |
+| `test-apps/test-app/`                      | Ember test app (SSR)                                       |
+| `test-apps/test-app-ssg/`                  | Ember test app (SSG)                                       |
+| `test-apps/test-app-combined/`             | Ember test app (SSR + SSG)                                 |
+| `test-apps/test-app-lazy-ssr/`             | Ember test app (SSR + lazy routes)                         |
+| `test-apps/test-app-lazy-ssg/`             | Ember test app (SSG + lazy routes)                         |
+| `test-apps/test-app-routes-layout-ssg/`    | Ember test app (SSG + lazy routes in `app/routes/<name>/`) |
+| `test-apps/test-app-monorepo-ssr/`         | Ember test app consuming a monorepo lib                    |
+| `test-apps/test-app-monorepo-ssg/`         | Same, for SSG                                              |
+| `test-apps/test-app-ssr-loading-substate/` | Loading substate behaviour (SSR)                           |
+| `test-apps/test-app-ssg-loading-substate/` | Loading substate behaviour (SSG)                           |
+| `test-apps/monorepo-lib/`                  | Shared library used by the monorepo apps                   |
+| `test-apps/test-server/`                   | Fastify SSR server                                         |
 
 Top level scripts:
 

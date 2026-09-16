@@ -1,17 +1,18 @@
 /**
- * Records which modules an app imports while it renders a URL, and turns
- * those into `<link>` tags through the CSS manifest.
+ * Records which modules the app imports while it renders a URL.
+ * Turns those into `<link>` tags through the CSS manifest.
  *
- * `trackDynamicImports` (vite-plugin.ts) rewrites every `import()` in
- * SSR builds to call the `__vite_ember_ssr_import__` global with the
- * imported module's path first. The global is installed once per
- * process here and appends to the set of the render in progress.
+ * In SSR builds, every `import()` in the app first calls
+ * the `__vite_ember_ssr_import__` global with the module's path.
+ * See `trackDynamicImports` in vite-plugin.ts.
  *
- * Tracking is a plain module-level set, not `AsyncLocalStorage`. Ember
- * schedules route loading through Backburner and RSVP, whose queues are
- * created once at startup, so the async context of a render does not
- * reach the `import()` call. Renders are serialised per worker, so one
- * set per process is enough.
+ * The global is installed once per process.
+ * It appends to the set of the render in progress.
+ *
+ * One module-level set holds that render's imports.
+ * `AsyncLocalStorage` cannot: Backburner and RSVP create their queues
+ * once at startup, so a render's async context never reaches the `import()`.
+ * Renders are serialised per worker, so one set is enough.
  */
 
 import { IMPORT_HOOK_GLOBAL, type CssManifest } from './vite-plugin.js';
@@ -32,8 +33,10 @@ function installImportHook(): void {
 }
 
 /**
- * Starts recording the module paths the app imports. Returns the set
- * that the import hook appends to until `stopImportTracking()`.
+ * Starts recording the module paths the app imports.
+ *
+ * Returns the set that the import hook appends to
+ * until `stopImportTracking()` is called.
  */
 export function startImportTracking(): Set<string> {
   installImportHook();
@@ -46,8 +49,10 @@ export function stopImportTracking(): void {
 }
 
 /**
- * Builds stylesheet links for every tracked import present in the
- * manifest, in import order, without duplicates.
+ * Builds a stylesheet link for every tracked import in the manifest.
+ *
+ * - in import order
+ * - each href once
  */
 export function buildCssLinks(
   manifest: CssManifest | null | undefined,
