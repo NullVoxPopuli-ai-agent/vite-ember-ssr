@@ -7,6 +7,11 @@
  * Note: This file intentionally mirrors app.ts as closely as possible.
  * The same router import triggers lazy bundle registration, and the same
  * negative glob exclusions keep lazy routes out of the eager bundle.
+ *
+ * The lazy routes live in `app/routes/<name>/+template.gts` rather than
+ * `app/templates/<name>.gts`. Their resolver keys come from `bundle()` in
+ * route-splitting.ts, not from the file path, which is what lets the CSS
+ * manifest work for any layout.
  */
 import EmberApp from 'ember-strict-application-resolver';
 import PageTitleService from 'ember-page-title/services/page-title';
@@ -21,8 +26,8 @@ class App extends EmberApp {
     ...import.meta.glob(
       [
         './{routes,templates}/**/*.{ts,gts}',
-        '!./templates/about.gts',
-        '!./templates/contact.gts',
+        '!./routes/about/**',
+        '!./routes/contact/**',
       ],
       { eager: true },
     ),

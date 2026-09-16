@@ -458,6 +458,10 @@ Application.create(config.APP);
 
 Both SSR and SSG support `@embroider/router`'s lazy loaded route bundles (`window._embroiderRouteBundles_`). No additional configuration is required.
 
+Lazy routes bring their CSS with them, and that CSS has to be linked in the server rendered `<head>` to avoid a flash of unstyled content. The client build writes a `css-manifest.json` that maps each dynamically imported module (a path relative to the Vite root, such as `app/templates/about.gts`) to the CSS files Vite extracted for its chunk. While the server renders a URL, every `import()` the app performs is recorded. The recorded modules are looked up in the manifest and their CSS is injected as `<link>` tags.
+
+Because the manifest is keyed by what the app imports rather than by route name, any file layout works. Where a template lives, how `modules` is assembled, and how `_embroiderRouteBundles_` is built are all up to the app.
+
 ### SSR bundling (`ssr.noExternal`)
 
 Both plugins set `ssr.noExternal: [/./]`, which tells Vite to bundle every dependency into the SSR build instead of leaving them as runtime `require`/`import` calls.
@@ -511,7 +515,7 @@ import {
 - **`app.renderRoute(url, options?)`** renders a URL path. Returns `{ head, body, statusCode, error }`. Options: `{ shoebox?, cssManifest?, settledTimeout? }`. `settledTimeout` (default `10000`) bounds how long the renderer waits for the SSR bundle's exported `settled()` to resolve, see [Settling](#settling).
 - **`app.destroy()`** shuts down the worker pool.
 - **`assembleHTML(template, renderResult)`** inserts rendered fragments into the template at the `<!-- VITE_EMBER_SSR_HEAD -->` and `<!-- VITE_EMBER_SSR_BODY -->` markers.
-- **`loadCssManifest(clientDir)`** loads the CSS manifest from the client build output. Returns `undefined` if not present. Used with lazy routes.
+- **`loadCssManifest(clientDir)`** loads the CSS manifest from the client build output. Returns `undefined` if not present. Used with lazy routes, see [Lazy routes](#lazy-routes-embroiderrouter).
 - **`hasSSRMarkers(html)`** returns `{ head: boolean, body: boolean }` indicating which markers are present.
 
 ### `vite-ember-ssr/client`

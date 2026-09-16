@@ -13,6 +13,6 @@ Router.map(function () {
 });
 
 window._embroiderRouteBundles_ = [
-  bundle('about', () => [import('./templates/about.gts')]),
-  bundle('contact', () => [import('./templates/contact.gts')]),
+  bundle('about', () => [import('./routes/about/+template.gts')]),
+  bundle('contact', () => [import('./routes/contact/+template.gts')]),
 ];

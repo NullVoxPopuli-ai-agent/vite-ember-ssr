@@ -7,6 +7,10 @@
  * - The prerender flow injects lazy CSS <link> tags into the static HTML.
  * - The contact route depends on a 3rd-party package (nvp.ui) that brings
  *   its own CSS, exercising the noExternal CSS extraction path.
+ * - The lazy routes live in `app/routes/<name>/+template.gts`, not in
+ *   `app/templates/`. Their chunks are all named `_template`, so the manifest
+ *   and the prerender step can only work by tracking what the app imports,
+ *   never by deriving route names from file paths.
  *
  * Generic SSG output and CSS manifest contents are already covered by
  * ssg.test.js and lazy-ssr.test.js.
@@ -50,14 +54,22 @@ describe('Lazy SSG CSS manifest delivery', () => {
     expect(await fileExists(resolve(lazyDist, 'css-manifest.json'))).toBe(true);
   });
 
+  it('keys entries by source module path, not by route name', () => {
+    expect(cssManifest).toHaveProperty('app/routes/about/+template.gts');
+    expect(cssManifest).toHaveProperty('app/routes/contact/+template.gts');
+    expect(cssManifest).not.toHaveProperty('about');
+    expect(cssManifest).not.toHaveProperty('contact');
+  });
+
   it('includes a 3rd-party package CSS in the contact route entry', () => {
-    // contact.gts imports SharedBadge (shared CSS) and nvp.ui (its own CSS).
-    // This exercises the ssr.noExternal CSS extraction path for installed
-    // packages, which lazy-ssr does not.
-    expect(cssManifest.contact.length).toBe(2);
-    expect(cssManifest.contact).toEqual(
+    // contact's template imports SharedBadge (shared CSS) and nvp.ui (its
+    // own CSS). This exercises the ssr.noExternal CSS extraction path for
+    // installed packages, which lazy-ssr does not.
+    const contact = cssManifest['app/routes/contact/+template.gts'];
+    expect(contact.length).toBe(2);
+    expect(contact).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/\/assets\/contact-[a-zA-Z0-9_-]+\.css$/),
+        expect.stringMatching(/\/assets\/_template-[a-zA-Z0-9_-]+\.css$/),
         expect.stringMatching(/\/assets\/shared-badge-[a-zA-Z0-9_-]+\.css$/),
       ]),
     );
@@ -72,27 +84,32 @@ describe('Lazy SSG CSS link injection at prerender time', () => {
     const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/);
     expect(headMatch).not.toBeNull();
 
-    expect(headMatch[1]).toMatch(
-      /<link rel="stylesheet" href="\/assets\/about-[a-zA-Z0-9_-]+\.css">/,
-    );
-    expect(headMatch[1]).toMatch(
-      /<link rel="stylesheet" href="\/assets\/shared-badge-[a-zA-Z0-9_-]+\.css">/,
-    );
+    for (const href of cssManifest['app/routes/about/+template.gts']) {
+      expect(headMatch[1]).toContain(`<link rel="stylesheet" href="${href}">`);
+    }
   });
 
-  it('injects 3rd-party package CSS into the contact route', async () => {
+  it('injects only the CSS of the routes that were loaded', async () => {
     const html = await readLazyHtml('contact');
-
-    expect(html).toMatch(
-      /<link rel="stylesheet" href="\/assets\/contact-[a-zA-Z0-9_-]+\.css">/,
+    const contactCss = cssManifest['app/routes/contact/+template.gts'];
+    const aboutOnlyCss = cssManifest['app/routes/about/+template.gts'].filter(
+      (href) => !contactCss.includes(href),
     );
+
+    for (const href of contactCss) {
+      expect(html).toContain(`<link rel="stylesheet" href="${href}">`);
+    }
+    expect(aboutOnlyCss.length).toBeGreaterThan(0);
+    for (const href of aboutOnlyCss) {
+      expect(html).not.toContain(`<link rel="stylesheet" href="${href}">`);
+    }
   });
 
   it('does not inject lazy CSS on eager prerendered routes', async () => {
     const html = await readLazyHtml('index');
 
     expect(html).not.toMatch(
-      /<link rel="stylesheet" href="\/assets\/about-[a-zA-Z0-9_-]+\.css">/,
+      /<link rel="stylesheet" href="\/assets\/_template-[a-zA-Z0-9_-]+\.css">/,
     );
   });
 });

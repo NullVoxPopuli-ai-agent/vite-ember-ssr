@@ -744,6 +744,9 @@ importers:
       happy-dom:
         specifier: ^20.8.9
         version: 20.8.9
+      magic-string:
+        specifier: ^0.30.21
+        version: 0.30.21
       tinypool:
         specifier: ^2.1.0
         version: 2.1.0
