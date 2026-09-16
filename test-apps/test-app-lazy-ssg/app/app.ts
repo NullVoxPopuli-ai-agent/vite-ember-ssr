@@ -11,8 +11,8 @@ export default class App extends EmberApp {
     ...import.meta.glob(
       [
         './{routes,templates}/**/*.{ts,gts}',
-        '!./routes/about/**',
-        '!./routes/contact/**',
+        '!./templates/about.gts',
+        '!./templates/contact.gts',
       ],
       { eager: true },
     ),

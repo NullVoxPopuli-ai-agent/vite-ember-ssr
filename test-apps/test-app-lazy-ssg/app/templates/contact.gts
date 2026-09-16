@@ -1,5 +1,5 @@
-import SharedBadge from '../../components/shared-badge.gts';
-import LegacyNotice from '../../components/legacy-notice.gts';
+import SharedBadge from '../components/shared-badge.gts';
+import LegacyNotice from '../components/legacy-notice.gts';
 import 'nvp.ui';
 
 <template>
