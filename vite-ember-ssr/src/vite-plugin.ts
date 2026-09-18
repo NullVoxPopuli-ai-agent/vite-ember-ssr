@@ -457,6 +457,28 @@ export interface EmberSsgPluginOptions {
    * @default 'dist'
    */
   outDir?: string;
+
+  /**
+   * Edits the HTML of a prerendered page before it is written.
+   *
+   * The template is the built `index.html`, which also serves the routes
+   * that are not prerendered, so it can hold markup that a prerendered
+   * page does not need: an app shell, a loading state. This hook removes
+   * such markup for the routes that have their content in the HTML.
+   *
+   * @example
+   * ```js
+   * emberSsg({
+   *   routes: ['index', 'about'],
+   *   transformHtml: (html) =>
+   *     html.replace(/<!-- app-shell -->[\s\S]*?<!-- \/app-shell -->/, ''),
+   * })
+   * ```
+   */
+  transformHtml?: (
+    html: string,
+    context: { route: string; url: string },
+  ) => string | Promise<string>;
 }
 
 /**
@@ -492,7 +514,12 @@ export interface EmberSsgPluginOptions {
  * ```
  */
 export function emberSsg(options: EmberSsgPluginOptions): Plugin {
-  const { routes, ssrEntry = 'app/app-ssr.ts', shoebox = false } = options;
+  const {
+    routes,
+    ssrEntry = 'app/app-ssr.ts',
+    shoebox = false,
+    transformHtml,
+  } = options;
 
   // Track whether the user explicitly provided outDir
   const explicitOutDir = options.outDir;
@@ -703,7 +730,11 @@ export function emberSsg(options: EmberSsgPluginOptions): Plugin {
                   return;
                 }
 
-                const html = assembleHTML(template, result);
+                let html = assembleHTML(template, result);
+
+                if (transformHtml) {
+                  html = await transformHtml(html, { route, url });
+                }
 
                 // 'index' → index.html (overwrite the shell)
                 // 'about' → about/index.html

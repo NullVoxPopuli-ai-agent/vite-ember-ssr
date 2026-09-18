@@ -269,6 +269,22 @@ describe('body attributes', () => {
     expect(typeof rendered.bodyAttrs).toBe('object');
   });
 
+  it('assembleHTML drops stylesheet links that the template already has', () => {
+    const tmpl =
+      '<html><head><link rel="stylesheet" crossorigin href="/assets/entry-abc.css"><!-- VITE_EMBER_SSR_HEAD --></head><body><!-- VITE_EMBER_SSR_BODY --></body></html>';
+    const rendered = {
+      head: '<link rel="stylesheet" href="/assets/entry-abc.css"><link rel="stylesheet" href="/assets/route-def.css"><title>Test</title>',
+      body: '<div>content</div>',
+    };
+    const html = assembleHTML(tmpl, rendered);
+
+    expect(html.match(/entry-abc\.css/g)).toHaveLength(1);
+    expect(html).toContain(
+      '<link rel="stylesheet" href="/assets/route-def.css">',
+    );
+    expect(html).toContain('<title>Test</title>');
+  });
+
   it('assembleHTML applies bodyAttrs to the <body> tag', () => {
     const tmpl =
       '<html><head><!-- VITE_EMBER_SSR_HEAD --></head><body><!-- VITE_EMBER_SSR_BODY --></body></html>';
