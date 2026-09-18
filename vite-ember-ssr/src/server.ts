@@ -369,7 +369,7 @@ export function assembleHTML(
   let html = template.replace(SSR_MARKER_REGEX, (_match, tag: string) => {
     if (tag === 'HEAD' && !headReplaced) {
       headReplaced = true;
-      return rendered.head;
+      return withoutStylesheetsOf(template, rendered.head);
     }
     if (tag === 'BODY' && !bodyReplaced) {
       bodyReplaced = true;
@@ -388,6 +388,31 @@ export function assembleHTML(
   }
 
   return html;
+}
+
+const STYLESHEET_LINK_REGEX = /<link\b[^>]*\brel=["']stylesheet["'][^>]*>/g;
+const HREF_REGEX = /\bhref=["']([^"']+)["']/;
+
+/**
+ * Drops the stylesheet links of the rendered head whose href the template
+ * already has. The CSS of a route chunk can also be CSS of the entry, and
+ * Vite already put a link for that in the template; a second link makes the
+ * browser request the file twice, and it blocks rendering twice.
+ */
+function withoutStylesheetsOf(template: string, head: string): string {
+  const inTemplate = new Set<string>();
+
+  for (const link of template.match(STYLESHEET_LINK_REGEX) ?? []) {
+    const href = link.match(HREF_REGEX)?.[1];
+    if (href) inTemplate.add(href);
+  }
+
+  if (inTemplate.size === 0) return head;
+
+  return head.replace(STYLESHEET_LINK_REGEX, (link) => {
+    const href = link.match(HREF_REGEX)?.[1];
+    return href && inTemplate.has(href) ? '' : link;
+  });
 }
 
 /**
