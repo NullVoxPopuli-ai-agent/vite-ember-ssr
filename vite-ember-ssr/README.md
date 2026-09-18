@@ -494,6 +494,7 @@ Vite plugin for static site generation.
 | `routes`   | `string[]` | (required)         | URL paths to prerender. `'index'` is special cased, see [Route format](#route-format)   |
 | `ssrEntry` | `string`   | `'app/app-ssr.ts'` | Path to the SSR entry module                                                            |
 | `shoebox`  | `boolean`  | `false`            | Serialize captured fetch responses into the HTML, see [Shoebox](#shoebox)               |
+| `transformHtml` | `(html, { route, url }) => string \| Promise<string>` | | Edits the HTML of a prerendered page before it is written. The template also serves the routes that are not prerendered, so use this to drop markup that a prerendered page does not need, such as an app shell |
 | `outDir`   | `string`   | `'dist'`           | Output directory. Ignored when combined with `emberSsr` (output goes to `clientOutDir`) |
 
 ### `vite-ember-ssr/server`
