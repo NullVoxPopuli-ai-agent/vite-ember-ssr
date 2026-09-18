@@ -142,8 +142,11 @@ export function installShoebox(): boolean {
   // crash on real responses ("Headers are immutable") while the shoebox
   // interceptor is installed. The wrapper delegates to the original fetch for
   // everything it doesn't serve, so reporting its source is accurate enough.
-  const originalSource = _originalFetch.toString();
-  globalThis.fetch.toString = () => originalSource;
+  // The sniffing only happens in dev builds, so scope the override to Vite dev.
+  if (import.meta.env?.DEV) {
+    const originalSource = _originalFetch.toString();
+    globalThis.fetch.toString = () => originalSource;
+  }
 
   return true;
 }
