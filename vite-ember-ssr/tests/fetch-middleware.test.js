@@ -158,7 +158,11 @@ describe('shoeboxMiddleware', () => {
     const terminal = async () => {
       const headers = new Headers({ 'content-type': 'application/json' });
       headers.append('set-cookie', 'X-Auth-Token=secret; Path=/; HttpOnly');
-      return new Response('{"ok":true}', { status: 200, statusText: 'OK', headers });
+      return new Response('{"ok":true}', {
+        status: 200,
+        statusText: 'OK',
+        headers,
+      });
     };
 
     await compose(
