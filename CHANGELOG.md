@@ -1,5 +1,23 @@
 # Changelog
 
+## Release (2026-09-18)
+
+* vite-ember-ssr 0.5.0 (minor)
+
+#### :rocket: Enhancement
+* `vite-ember-ssr`
+  * [#26](https://github.com/evoactivity/vite-ember-ssr/pull/26) Add a transformHtml option to emberSsg ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+
+#### :bug: Bug Fix
+* `vite-ember-ssr`
+  * [#19](https://github.com/evoactivity/vite-ember-ssr/pull/19) fix: make the shoebox fetch interceptor transparent to native-fetch detection ([@st-h](https://github.com/st-h))
+  * [#14](https://github.com/evoactivity/vite-ember-ssr/pull/14) fix: don't serialize Set-Cookie into the shoebox ([@st-h](https://github.com/st-h))
+  * [#25](https://github.com/evoactivity/vite-ember-ssr/pull/25) Drop stylesheet links that the template already has ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+
+#### Committers: 2
+- @NullVoxPopuli's reduced-access machine account for AI usage ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+- Steve ([@st-h](https://github.com/st-h))
+
 ## Release (2026-07-19)
 
 * vite-ember-ssr 0.4.1 (patch)
